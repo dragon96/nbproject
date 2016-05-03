@@ -1,16 +1,17 @@
 # NB Installation Procedure
 
-**Note:** This assumes that you've downloaded the project from git (for instance from https://github.com/nbproject/nbproject ) and that you copied it in a directory that the user running the server (e.g www-data) can access. 
+## 0 - Clone Repository
+Clone the project from git: https://github.com/nbproject/nbproject. Make sure that the project is in a directory that the user running the server (e.g www-data, /var/www/html/) can access. 
 
 ## 1 - Dependencies
-On a typical debian-like (ubuntu etc...) distribution, NB requires the following base packages:
+On a typical Debian-like (Ubuntu etc...) distribution, NB requires the following base packages:
 
 **NOTE:**
   * packages in square brackets are optional
   * core ubuntu dependencies can be installed by running 'sudo make prereqs'
   
 ### CORE DEPENDENCIES
-These can be installed as ubuntu packages
+These can be installed as Ubuntu packages
 
     python (>= 2.6)
     postgresql (>= 8.4)
@@ -47,51 +48,64 @@ These can be installed as ubuntu packages
 
 ## 2 - Installation commands
    Once you've satisfied the dependencies listed above, you need to run the following installation commands (from nb root folder):
+```
+    npm install               # in order to install specific grunt modules, such as grunt-css, execSync
+    make django               # create configuration files. You can safely ignore the "Error 127" message
+    sudo make create_dirs     # create root folder and some folders below that for nb data
+    make django               # one more time...
+    grunt                     # Compiles JS and CSS
+    
+```
+* Copy ```nbproject/apps/nbsite/settings_credentials.py.skel``` to ```nbproject/apps/nbsite/settings_credentials.py```. Edit the values in ```apps/nbsite/settings_credentials.py```, following the directions there.
 
-    npm install #in order to install specific grunt modules, such as grunt-css, execSync
-    make django #create configuration files. You can safely ignore the "Error 127" message
-    #[copy apps/nbsite/settings_credentials.py.skel to settings_credentials.py and]
-    #[edit values in apps/nbsite/settings_credentials.py, following the direction there]
-    sudo make create_dirs  # create root folder and some folders below that for nb data
-    make django  # one more time...
-    #[If you're deploying a production environmant, use the cmds given in output in order to configure apache]
-    #[then configure the cron jobs (cf 5)]
-    grunt  # Compiles js and css.  
-    #[optional]: If you want to use different slave servers for different parts of the app (i.e. one for serving 
-    # images, one for handling the rpc calls, and one for handling file uploads for instance), edit params in 
-    # content/ui/admin/conf.js: Tell which server(s) the client should use to fetch various pieces data. If you're 
-    # going to use just one server for the whole app, you can safely ignore this. Note that this is unrelated to 
-    # whether or not you're using localhost as your  databse server, but if you do use several server, make sure 
-    # they all use the same database, for consistency.  Don't forget to re-run 'grunt' if you change conf.js
+* If you are deploying onto a server for a production environment, follow the commands printed out by the ```make django``` in order to properly configure your Apache files and cron jobs. Remember to remove the Apache default conf file in ```/etc/apache2/sites-available/```.
+ 
+* Optional: If you want to use different slave servers for different parts of the app (i.e. one for serving images, one for handling the rpc calls, and one for handling file uploads for instance), edit params in ```content/ui/admin/conf.js```: Tell which server(s) the client should use to fetch various pieces data. If you're going to use just one server for the whole app, you can safely ignore this. Note that this is unrelated to whether or not you're using localhost as your  databse server, but if you do use several servers, make sure they all use the same database, for consistency.  Don't forget to re-run ```grunt``` if you change ```conf.js```.
 
 ## 3 - Database Initialization
-   * Log in as someone who has postgres create role and create database privileges, such as postgres (one way is to do 'su' and then 'su postgres')
-    createuser nbadmin -P #important to setup as superuser since only superusers can create a language (used for plpythonu) 
 
-   * Back to the regular user:
+* Log in as a user who has psql superuser privileges, such as postgres. Create a superuser account and a database. For example, one way to do this is: 
+```
+    sudo -u postgres -i
+    createuser <YOUR_POSTGRES_USER> -P -s 
+               # important to setup as superuser since only superusers can create a language (used for plpythonu)
     createdb -U <YOUR_POSTGRES_USER> -h localhost <YOUR_NB_DATABASE_NAME>
-
-   * Exit from the database
+    
+``` 
+* Exit from the database and from the postgres user. Then run:
 
 ```
     cd apps
     ./manage.py makemigrations # to create the database migrations files
     ./manage.py migrate # To create the database tables from the migrations files
-    ./manage.py sqlcustom base | ./manage.py dbshell # to create custom views. If this throws an error, you could simply log in to your postgres database and run the query contained in https://github.com/nbproject/nbproject/blob/dev/apps/base/sql/ensemble.sql 
+    ./manage.py sqlcustom base | ./manage.py dbshell # to create custom views. 
 ```
 
-   * You may also have to allow remote connections
-     * sudo nano /etc/postgresql/[YOUR_VERSION]/main/pg_hba.conf 
-          o host    your_db_name       your_db_user       127.0.0.1/0     password
-     * sudo nano /etc/postgresql/[YOUR_VERSION]/main/postgresql.conf
-          listen_addresses = '*' 
-   * if you make a mistake:
+If the last line returns a ```"Only the sqlmigrate and sqlflush commands can be used when an app has migrations."``` error, you can log in to your postgres database and run the queries contained in https://github.com/nbproject/nbproject/blob/dev/apps/base/sql/ensemble.sql 
+
+
+* You may also have to allow remote connections by adding the following line to the end of the ```/etc/postgresql/[YOUR_VERSION]/main/pg_hba.conf ``` file:
+```
+host    your_db_name       your_db_user       127.0.0.1/0     password
+```
+* And in the "Connections and Authentication" section of ```/etc/postgresql/[YOUR_VERSION]/main/postgresql.conf```, change:
+```
+   listen_addresses = '*' 
+```
+* If you make a mistake:
  
  ```
-    dropdb  -U nbadmin -h localhost notabene
-    createdb -U nbadmin -h localhost notabene
+    dropdb  -U <YOUR_POSTGRES_USER> -h localhost <YOUR_NB_DATABASE_NAME>
+    createdb -U <YOUR_POSTGRES_USER> -h localhost <YOUR_NB_DATABASE_NAME>
 ```
-    At this point you can try your installation using the Django debug server (but never use this in production...): 
+* If you are running NB locally, open ```nbproject/apps/nbsite/settings_credentials.py``` and uncomment the lines that set the values of ```EMAIL_BACKEND``` and ```EMAIL_FILE_PATH```.  Then set:
+```
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = '<EMAIL_FOLDER>'
+```
+Make sure that your user has permissions to write to `<EMAIL_FOLDER>`.
+
+* At this point you can try your installation using the Django debug server (but never use this in production...): 
 * From the apps directory: ```./manage.py runserver```
 * In your browser visit ```http://localhost:8000```
 
