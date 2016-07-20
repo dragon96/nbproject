@@ -132,10 +132,6 @@ module.exports = function (grunt) {
     src_css: addPrefix(VIEWS_DIR, ['ui.spreadsheetView1.css']),
   };
 
-  MODS.DOCANALYTICSVIEW = {
-    src_css: addPrefix(VIEWS_DIR, ['ui.docAnalyticsView.css']),
-  };
-
   MODS.BREADCRUMB = {
 <<<<<<< 5c20dc0e1fb23e07f91ea0d612759a5695f5622a
     src_js: addPrefix(MODULE_DIR,["dev/ui.breadcrumb.js" ]),
@@ -286,9 +282,9 @@ module.exports = function (grunt) {
     dest_css: DEST_DIR + 'subscribe.css',
   };
 
-  TARGETS.STATIC_PAGE = {
-    include: ['init_static_page', 'launch'],
-    src_js: [].concat(['build_static_page']),
+  TARGETS.ADD_NAVBAR = {
+    include: ['init_add_navbar', 'launch'],
+    src_js: [].concat(['build_add_navbar']),
     src_css: [].concat(
       addPrefix(LIB_DIR, ['jquery_ui/css/smoothness/jquery-ui-1.9.2.custom.css']),
       addPrefix(MODULE_DIR, ['ui.perspective.css', 'ui.viewport.css', 'ui.menu.css', 'ui.view.css']),
@@ -301,15 +297,17 @@ module.exports = function (grunt) {
       MODS.FILESVIEW.src_css,
       MODS.BREADCRUMB.src_css
     ),
-    dest_js: DEST_DIR + 'static_page_NB.js',
-    dest_css: DEST_DIR + 'static_page.css',
+    dest_js: DEST_DIR + 'add_navbar_NB.js',
+    dest_css: DEST_DIR + 'add_navbar.css',
   };
 
   TARGETS.LOGIN = {
-    include: ['login'],
+    include: ['login', 'launch'],
     src_js: [].concat(['build_login']),
     src_css: [].concat(
-      addPrefix(UI_DIR, ['template.css'])),
+      addPrefix(LIB_DIR, ['jquery_ui/css/smoothness/jquery-ui-1.9.2.custom.css']),
+      addPrefix(UI_DIR, ['template.css']),
+      'content/ui/classic/base.css'),
     dest_js: DEST_DIR + 'login_NB.js',
     dest_css: DEST_DIR + 'login.css',
   };
@@ -337,7 +335,8 @@ module.exports = function (grunt) {
       addPrefix(LIB_DIR, ['jquery_ui/jquery-ui.css']),
       addPrefix(MODULE_DIR, ['ui.perspective.css', 'ui.viewport.css', 'ui.menu.css', 'ui.view.css']),
       addPrefix(UI_DIR, ['template.css']),
-      MODS.DOCANALYTICSVIEW.src_css),
+      addPrefix(VIEWS_DIR, ['ui.docAnalyticsView.css']),
+      'content/ui/classic/base.css'),
     dest_js: DEST_DIR + 'docanalytics_NB.js',
     dest_css: DEST_DIR + 'docanalytics.css',
   };
@@ -374,17 +373,25 @@ module.exports = function (grunt) {
   };
 
   TARGETS.LOGOUT = {
-    include: [],
+    include: ['logout', 'launch'],
     src_js: [].concat(['build_logout']),
-    src_css: [],
+    src_css: [].concat(
+      addPrefix(LIB_DIR, ['jquery_ui/css/smoothness/jquery-ui-1.9.2.custom.css']),
+      addPrefix(UI_DIR, ['template.css']),
+      'content/ui/classic/base.css'),
     dest_js: DEST_DIR + 'logout_NB.js',
+    dest_css: DEST_DIR + 'logout.css'
   };
 
   TARGETS.PASSWORD = {
-    include: ['password_reminder'],
+    include: ['password_reminder', 'launch'],
     src_js: [].concat(['build_passwordreminder']),
-    src_css: [],
+    src_css: [].concat(
+      addPrefix(LIB_DIR, ['jquery_ui/css/smoothness/jquery-ui-1.9.2.custom.css']),
+      addPrefix(UI_DIR, ['template.css']),
+      'content/ui/classic/base.css'),
     dest_js: DEST_DIR + 'password_reminder_NB.js',
+    dest_css: DEST_DIR + 'password.css'
   };
 
   TARGETS.SPREADSHEET = {
@@ -419,6 +426,30 @@ module.exports = function (grunt) {
       addPrefix(UI_DIR, ['template.css', 'your_settings.css'])),
     dest_js: DEST_DIR + 'settings_NB.js',
     dest_css: DEST_DIR + 'settings.css',
+  };
+
+  TARGETS.ENTER_YOUR_NAME = {
+    include: ['init_enteryourname', 'launch'],
+    src_js: [].concat(['build_enteryourname']),
+    src_css: [].concat(
+      addPrefix(LIB_DIR, ['jquery_ui/jquery-ui.css']),
+      addPrefix(MODULE_DIR, ['ui.perspective.css', 'ui.viewport.css', 'ui.view.css']),
+      'content/ui/classic/base.css',
+      addPrefix(UI_DIR, ['template.css'])),
+    dest_js: DEST_DIR + 'enteryourname_NB.js',
+    dest_css: DEST_DIR + 'enteryourname.css',
+  };
+
+  TARGETS.CONFIRM_INVITE = {
+    include: ['init_confirm_invite', 'launch'],
+    src_js: [].concat(['build_confirm_invite']),
+    src_css: [].concat(
+      addPrefix(LIB_DIR, ['jquery_ui/jquery-ui.css']),
+      addPrefix(MODULE_DIR, ['ui.perspective.css', 'ui.viewport.css', 'ui.view.css']),
+      'content/ui/classic/base.css',
+      addPrefix(UI_DIR, ['template.css'])),
+    dest_js: DEST_DIR + 'confirm_invite_NB.js',
+    dest_css: DEST_DIR + 'confirm_invite.css',
   };
 
   var JS_TARGETS = {};
